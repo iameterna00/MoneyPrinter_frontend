@@ -8,7 +8,7 @@ export default function AppWrapper() {
   return (
     <>
    <Routes>
-      <Route path="/" element={<Navigate to="/workspace" replace />} />
+      <Route path="/" element={<Navigate to="/youtube" replace />} />
       <Route path="/youtube/*" element={<YouTubeWorkspace />} />
     </Routes>
     </>
