@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Trash2, Eye } from "lucide-react";
+import { webApi } from "../../../api/api";
 
 const SavedYoutube = () => {
   const [savedMedia, setSavedMedia] = useState([]);
@@ -7,14 +8,14 @@ const SavedYoutube = () => {
 
   useEffect(() => {
     // Fetch all generated videos from backend
-    fetch("http://localhost:8080/videos")
+    fetch(`${webApi}/videos`)
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {
           // Map filenames to media objects
           const videos = data.videos.map((filename, idx) => ({
             id: idx,
-            url: `http://localhost:8080/video/${filename}`,
+            url: `${webApi}/video/${filename}`,
             title: filename,
             date: new Date().toLocaleDateString(),
             views: 0,
