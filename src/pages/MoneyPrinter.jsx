@@ -2,7 +2,7 @@ import {CircleFadingPlus } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { AIModal, ContentModal, PerformanceModal, PreferencesModal, SubtitlesModal, VideoPromptInput, VoiceSelector } from "../components/YoutubeModels/youtubemodal";
 import SidebarMenu from "../components/YoutubeModels/sidebar";
-import stock from '../assets/stock.jpg'
+import silhouette from '../assets/darkimg.jpg'
 import cartoon from '../assets/cartoon.png'
 import realistic from '../assets/realistic.png'
 import SongList from "../components/YoutubeModels/bgmusic";
@@ -308,8 +308,8 @@ const addCustomPrompt = () => {
             src={
               contentType === "generative"
                 ? realistic
-                : contentType === "stock"
-                ? stock
+                : contentType === "silhouette"
+                ? silhouette
                 : cartoon
             }
             alt="Default"

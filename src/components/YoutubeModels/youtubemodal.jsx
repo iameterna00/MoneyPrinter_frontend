@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronsUpDown, X } from 'lucide-react'; 
-import stock from '../../assets/stock.jpg'
+import silhouette from '../../assets/darkimg.jpg'
 import cartoon from '../../assets/cartoon.png'
 import realistic from '../../assets/realistic.png'
 import { CircleFadingPlus, Scroll, ArrowUp, CircleStop } from "lucide-react";
@@ -109,7 +109,7 @@ export const VideoPromptInput = ({
     <div className="flex gap-4">
   {[
     { value: "generative", label: "Cineamtic", img: realistic },
-    { value: "stock", label: "Stock Videos", img: stock },
+    { value: "silhouette", label: "Silhouette", img: silhouette },
     { value: "cartoon", label: "Dark Cartoon", img: cartoon },
   ].map((option) => (
     <div
@@ -334,7 +334,7 @@ export const ContentModal = ({
       <div className="flex gap-4">
         {[
           { value: "generative", label: "Generative", img: realistic },
-          { value: "stock", label: "Stock", img: stock },
+          { value: "silhouette", label: "Silhouette", img: silhouette },
           { value: "cartoon", label: "Cartoon", img: cartoon },
         ].map((option) => (
           <div

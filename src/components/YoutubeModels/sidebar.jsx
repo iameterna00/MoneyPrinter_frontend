@@ -26,9 +26,9 @@ const SidebarMenu = () => {
   const menuItems = [
     { id: "Generate", label: "Generate", icon: Video, path: "/youtube" },
     { id: "Saved", label: "Saved", icon: Film, path: "/youtube/saved" },
-    { id: "Profile", label: "Profile", icon: User, path: "/profile" },
-    { id: "Settings", label: "Settings", icon: Settings, path: "/settings" },
-    { id: "Logout", label: "Logout", icon: LogOut, path: "/logout" },
+    // { id: "Profile", label: "Profile", icon: User, path: "/profile" },
+    // { id: "Settings", label: "Settings", icon: Settings, path: "/settings" },
+    // { id: "Logout", label: "Logout", icon: LogOut, path: "/logout" },
   ];
 
   return (
