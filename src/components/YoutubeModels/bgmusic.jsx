@@ -1,12 +1,13 @@
 import React, { useState } from "react";
+import { webApi } from "../../api/api";
 
 export default function SongList({ onSelectSong, songName, songs, loading, error }) {
   const [currentSong, setCurrentSong] = useState(null);
 
   const handlePlay = (filename, e) => {
     e.stopPropagation(); // prevent card click
-    
-    const songUrl = `http://localhost:8080/songs/${filename}`;
+
+    const songUrl = `${webApi}/songs/${filename}`;
 
     if (currentSong === songUrl) {
       setCurrentSong(null);
@@ -37,7 +38,7 @@ export default function SongList({ onSelectSong, songName, songs, loading, error
                 onClick={(e) => handlePlay(filename, e)}
                 className="px-4 cursor-pointer py-2 rounded-lg"
               >
-                {currentSong === `http://localhost:8080/songs/${filename}` ? "⏹" : "▶"}
+                {currentSong === `${webApi}/songs/${filename}` ? "⏹" : "▶"}
               </button>
               <p className="text-[10px] text-center mt-2">{displayName}</p>
              

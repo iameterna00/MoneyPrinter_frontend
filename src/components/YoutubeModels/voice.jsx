@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { webApi } from "../../api/api";
 
 export default function VoiceList({ onSelectVoice, voiceName, Voice }) {
   const [currentVoice, setCurrentVoice] = useState(null);
@@ -6,7 +7,7 @@ export default function VoiceList({ onSelectVoice, voiceName, Voice }) {
   const handlePlay = (filename, e) => {
     e.stopPropagation(); // prevent card click
 
-    const voiceUrl = `http://localhost:8080/voice/${filename}`;
+    const voiceUrl = `${webApi}/voice/${filename}`;
 
     if (currentVoice === voiceUrl) {
       setCurrentVoice(null);
@@ -34,7 +35,7 @@ export default function VoiceList({ onSelectVoice, voiceName, Voice }) {
                 onClick={(e) => handlePlay(filename, e)}
                 className="px-4 cursor-pointer py-2 rounded-lg"
               >
-                {currentVoice === `http://localhost:8080/voice/${filename}` ? "⏹" : "▶"}
+                {currentVoice === `${webApi}/voice/${filename}` ? "⏹" : "▶"}
               </button>
               <p className="text-[10px] text-center mt-2">{displayName}</p>
             </div>

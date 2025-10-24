@@ -7,6 +7,7 @@ import cartoon from '../assets/cartoon.png'
 import realistic from '../assets/realistic.png'
 import SongList from "../components/YoutubeModels/bgmusic";
 import VoiceList from "../components/YoutubeModels/voice";
+import { webApi } from "../api/api";
 
 export default function MoneyPrinter() {
   const [videoSubject, setVideoSubject] = useState("");
@@ -71,7 +72,7 @@ const updateCustomPrompt = (index, value) => {
 useEffect(() => {
   const fetchVoice = async () => {
     try {
-      const res = await fetch("http://localhost:8080/voice");
+      const res = await fetch(`${webApi}/voice`);
       if (!res.ok) throw new Error("Failed to fetch voice");
       const data = await res.json();
       setVoice(data.voice || []);
@@ -87,7 +88,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const res = await fetch("http://localhost:8080/songs");
+        const res = await fetch(`${webApi}/songs`);
         if (!res.ok) throw new Error("Failed to fetch songs");
         const data = await res.json();
         setSongs(data.songs || []);
@@ -120,14 +121,14 @@ useEffect(() => {
         color: subtitlesColor,
       };
 
-      const res = await fetch("http://localhost:8080/api/generate", {
+      const res = await fetch(`${webApi}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
-      setVideoUrl("http://localhost:8080/video/output.mp4");
+      setVideoUrl(`${webApi}/video/output.mp4`);
       alert(data.message);
     } catch (err) {
       console.error(err);
