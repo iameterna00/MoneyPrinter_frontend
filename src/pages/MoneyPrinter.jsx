@@ -1,4 +1,4 @@
-import {CircleFadingPlus } from "lucide-react";
+import { CircleFadingPlus } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { AIModal, ContentModal, PerformanceModal, PreferencesModal, SubtitlesModal, VideoPromptInput, VoiceSelector } from "../components/YoutubeModels/youtubemodal";
 import SidebarMenu from "../components/YoutubeModels/sidebar";
@@ -34,7 +34,13 @@ export default function MoneyPrinter() {
   const [songs, setSongs] = useState([]); 
   const [songsLoading, setSongsLoading] = useState(true);
   const [songsError, setSongsError] = useState(null);
-
+  
+  // NEW: Status tracking state
+  const [taskId, setTaskId] = useState(null);
+  const [generationStatus, setGenerationStatus] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [currentVideo, setCurrentVideo] = useState(0);
+  const [totalVideos, setTotalVideos] = useState(0);
 
   // Load from localStorage
   useEffect(() => {
@@ -63,27 +69,27 @@ export default function MoneyPrinter() {
 
   const save = (key, value) => localStorage.setItem(`${key}Value`, value);
 
-const updateCustomPrompt = (index, value) => {
-  const newPrompts = [...customPrompts];   
-  newPrompts[index] = value;              
-  setCustomPrompts(newPrompts);        
-};
-
-useEffect(() => {
-  const fetchVoice = async () => {
-    try {
-      const res = await fetch(`${webApi}/voice`);
-      if (!res.ok) throw new Error("Failed to fetch voice");
-      const data = await res.json();
-      setVoice(data.voice || []);
-      console.log('Successfully fetched voice', data.voice);
-    } catch (err) {
-      console.log('Error fetching voice', err);
-    }
+  const updateCustomPrompt = (index, value) => {
+    const newPrompts = [...customPrompts];   
+    newPrompts[index] = value;              
+    setCustomPrompts(newPrompts);        
   };
 
-  fetchVoice();
-}, []);
+  useEffect(() => {
+    const fetchVoice = async () => {
+      try {
+        const res = await fetch(`${webApi}/voice`);
+        if (!res.ok) throw new Error("Failed to fetch voice");
+        const data = await res.json();
+        setVoice(data.voice || []);
+        console.log('Successfully fetched voice', data.voice);
+      } catch (err) {
+        console.log('Error fetching voice', err);
+      }
+    };
+
+    fetchVoice();
+  }, []);
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -102,9 +108,64 @@ useEffect(() => {
     fetchSongs();
   }, []);
 
+  // NEW: Poll for status updates
+  useEffect(() => {
+    if (!taskId) return;
+
+    const checkStatus = async () => {
+      try {
+        const res = await fetch(`${webApi}/generate/status/${taskId}`);
+        const data = await res.json();
+        
+        setGenerationStatus(data.status);
+        
+        if (data.status === 'processing') {
+          // Update progress if available
+          if (data.progress) setProgress(data.progress);
+          if (data.current_video) setCurrentVideo(data.current_video);
+          if (data.total_videos) setTotalVideos(data.total_videos);
+          
+          // Check again in 3 seconds
+          setTimeout(checkStatus, 3000);
+        } else if (data.status === 'completed') {
+          // Generation finished successfully
+          setIsGenerating(false);
+          setProgress(100);
+          
+          // Fetch the list of generated videos
+          const videosRes = await fetch(`${webApi}/api/videos`);
+          const videosData = await videosRes.json();
+          
+          if (videosData.videos && videosData.videos.length > 0) {
+            // Show the first video or let user choose
+            const firstVideo = videosData.videos[0];
+            setVideoUrl(`${webApi}/video/${firstVideo}`);
+          }
+          
+          alert(data.message || "Video generation completed!");
+        } else if (data.status === 'error') {
+          // Generation failed
+          setIsGenerating(false);
+          alert(data.message || "Generation failed");
+        }
+      } catch (err) {
+        console.error("Error checking status:", err);
+        // Retry after 5 seconds if there's an error
+        setTimeout(checkStatus, 5000);
+      }
+    };
+
+    checkStatus();
+  }, [taskId]);
+
   const generateVideo = async () => {
     setVideoUrl("");
     setIsGenerating(true);
+    setGenerationStatus("processing");
+    setProgress(0);
+    setCurrentVideo(0);
+    setTotalVideos(0);
+    
     try {
       const payload = {
         videoSubject,
@@ -128,199 +189,209 @@ useEffect(() => {
       });
 
       const data = await res.json();
-      setVideoUrl(`${webApi}/video/output.mp4`);
-      alert(data.message);
+      
+      if (data.task_id) {
+        setTaskId(data.task_id);
+        // Status polling will be handled by the useEffect above
+      } else {
+        // Fallback for old API
+        setIsGenerating(false);
+        alert(data.message);
+      }
     } catch (err) {
       console.error(err);
-      alert("An error occurred. Please try again later.");
-    } finally {
       setIsGenerating(false);
+      alert("An error occurred. Please try again later.");
     }
   };
 
   const cancelGeneration = async () => {
     try {
-      const res = await fetch(`${webApi}/api/cancel`, {
+      const res = await fetch(`${webApi}/cancel`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
       });
       const data = await res.json();
+      setIsGenerating(false);
+      setGenerationStatus("cancelled");
+      setTaskId(null);
       alert(data.message);
     } catch (err) {
       console.error(err);
       alert("An error occurred. Please try again later.");
-    } finally {
-      setIsGenerating(false);
     }
   };
+
   const handleInput = (e, i) => {
-  e.target.style.height = "auto"; // reset height
-  e.target.style.height = Math.min(e.target.scrollHeight, 200) + "px"; // 200px ≈ h-50
-  updateCustomPrompt(i, e.target.value);
-};
-const removeCustomPrompt = (index) => {
-  const newPrompts = [...customPrompts];
-  newPrompts.splice(index, 1);
-  setCustomPrompts(newPrompts);
-};
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 200) + "px";
+    updateCustomPrompt(i, e.target.value);
+  };
 
-const addCustomPrompt = () => {
-  setCustomPrompts([...customPrompts, ""]);
-};
+  const removeCustomPrompt = (index) => {
+    const newPrompts = [...customPrompts];
+    newPrompts.splice(index, 1);
+    setCustomPrompts(newPrompts);
+  };
 
+  const addCustomPrompt = () => {
+    setCustomPrompts([...customPrompts, ""]);
+  };
+
+  // NEW: Get status message for display
+  const getStatusMessage = () => {
+    switch (generationStatus) {
+      case 'processing':
+        if (currentVideo > 0 && totalVideos > 0) {
+          return `Generating video ${currentVideo} of ${totalVideos}...`;
+        }
+        return "Starting video generation...";
+      case 'completed':
+        return "Generation completed!";
+      case 'error':
+        return "Generation failed";
+      case 'cancelled':
+        return "Generation cancelled";
+      default:
+        return "Processing...";
+    }
+  };
 
   return (
-    <div className="min-h-screen  w-full flex flex-col md:flex-row  relative">
+    <div className="min-h-screen w-full flex flex-col md:flex-row relative">
       {/* Main controls */}
-      <div className={`transition-all flex-1  lightborder-right p-4 duration-700 z-50 ease-in-out `}>
-     <div className="flex gap-6">
-      {tabs.map((tab) => (
-        <div
-          key={tab}
-          onClick={() => setActiveTab(tab)}
-          className={`
-            text-gray-400 cursor-pointer font-medium text-sm  m-2 transition-colors duration-200
-            ${activeTab === tab ? "text-white border-white border-b" : "hover:text-white"}
-          `}
-        >
-          {tab}
+      <div className={`transition-all flex-1 lightborder-right p-4 duration-700 z-50 ease-in-out`}>
+        <div className="flex gap-6">
+          {tabs.map((tab) => (
+            <div
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`
+                text-gray-400 cursor-pointer font-medium text-sm m-2 transition-colors duration-200
+                ${activeTab === tab ? "text-white border-white border-b" : "hover:text-white"}
+              `}
+            >
+              {tab}
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-        <div className={` w-full flex flex-col gap-2`}>
+        
+        <div className={`w-full flex flex-col gap-2`}>
           {activeTab === "Script" && (
-    <VideoPromptInput
-      useCustomPrompt={useCustomPrompt}
-      setUseCustomPrompt={setUseCustomPrompt}
-      customPrompts={customPrompts}
-      updateCustomPrompt={updateCustomPrompt}
-      setDrawerOpen={setDrawerOpen}
-      videoSubject={videoSubject}
-      setVideoSubject={setVideoSubject}
-      save={save}
-      isGenerating={isGenerating}
-      generateVideo={generateVideo}
-      setContentType={setContentType}
-      contentType={contentType}
-      cancelGeneration={cancelGeneration}
-    />
-  )}
+            <VideoPromptInput
+              useCustomPrompt={useCustomPrompt}
+              setUseCustomPrompt={setUseCustomPrompt}
+              customPrompts={customPrompts}
+              updateCustomPrompt={updateCustomPrompt}
+              setDrawerOpen={setDrawerOpen}
+              videoSubject={videoSubject}
+              setVideoSubject={setVideoSubject}
+              save={save}
+              isGenerating={isGenerating}
+              generateVideo={generateVideo}
+              setContentType={setContentType}
+              contentType={contentType}
+              cancelGeneration={cancelGeneration}
+            />
+          )}
 
-{activeTab === "Voice" && (
-  <VoiceList
-    onSelectVoice={(filename) => {
-      setVoiceName(filename); // store selected voice
-      save("voiceName", filename);
-    }}
-    voiceName={voiceName} // single selected voice string
-    Voice={voice} // array of fetched voices
-  />
-)}
+          {activeTab === "Voice" && (
+            <VoiceList
+              onSelectVoice={(filename) => {
+                setVoiceName(filename);
+                save("voiceName", filename);
+              }}
+              voiceName={voiceName}
+              Voice={voice}
+            />
+          )}
 
- {activeTab === "Music" && (
+          {activeTab === "Music" && (
             <SongList 
               onSelectSong={(filename) => {
                 setSongsName(filename);
                 save("songsName", filename);
               }}
               songName={songsName}
-              songs={songs} // Pass songs as prop
+              songs={songs}
               loading={songsLoading}
               error={songsError}
             />
           )}
-
-
-          {/* Option buttons */}
-          {/* <div className={`grid ${isGenerating ? 'grid-cols-6' : 'grid-cols-3'} gap-3`}>
-            <button onClick={() => setActiveModal("ai")} className="text-white">
-              <div className="flex items-center justify-center duration-300 hover:shadow-[0_0_10px_1px_rgba(255,255,255,0.1)] lightborder p-3 cursor-pointer rounded-[30px] gap-2 text-[12px]">
-                <BrainCircuit size={15} /> {!isGenerating && 'AI Models'}
-              </div>
-            </button>
-            <button onClick={() => setActiveModal("voice")} className="text-white">
-              <div className="flex items-center justify-center duration-300 hover:shadow-[0_0_10px_1px_rgba(255,255,255,0.1)] lightborder p-3 cursor-pointer rounded-[30px] gap-2 text-[12px]">
-                <MicVocal size={15} /> {!isGenerating && 'Voice'}
-              </div>
-            </button>
-            <button onClick={() => setActiveModal("subtitles")} className="text-white">
-              <div className="flex items-center justify-center duration-300 hover:shadow-[0_0_10px_1px_rgba(255,255,255,0.1)] lightborder p-3 cursor-pointer rounded-[30px] gap-2 text-[12px]">
-                <ClosedCaption size={15} /> {!isGenerating && 'Subtitles'}
-              </div>
-            </button>
-            <button onClick={() => setActiveModal("content")} className="text-white">
-              <div className="flex items-center justify-center duration-300 hover:shadow-[0_0_10px_1px_rgba(255,255,255,0.1)] lightborder p-3 cursor-pointer rounded-[30px] gap-2 text-[12px]">
-                <Clapperboard size={15} /> {!isGenerating && 'Content'}
-              </div>
-            </button>
-            <button onClick={() => setActiveModal("performance")} className="text-white">
-              <div className="flex items-center justify-center duration-300 hover:shadow-[0_0_10px_1px_rgba(255,255,255,0.1)] lightborder p-3 cursor-pointer rounded-[30px] gap-2 text-[12px]">
-                <SlidersHorizontal size={15} /> {!isGenerating && 'Performance'}
-              </div>
-            </button>
-            <button onClick={() => setActiveModal("preferences")} className="text-white">
-              <div className="flex items-center justify-center duration-300 hover:shadow-[0_0_10px_1px_rgba(255,255,255,0.1)] lightborder p-3 cursor-pointer rounded-[30px] gap-2 text-[12px]">
-                <Cog size={15} /> {!isGenerating && 'Preference'}
-              </div>
-            </button>
-          </div> */}
         </div>
       </div>
 
-<div
-  className={`inset-0 w-full flex flex-1 flex-col lightborder-right  -top-20 z-40 
-    transition-opacity duration-700`}
->
-  {/* Sample Image heading on top */}
- <div className="lightborderbottom lightbordertop ">
-   <h1 className="text-sm  p-2 font-semibold text-gray-300">Preview</h1>
- </div>
+      <div className={`inset-0 w-full flex flex-1 flex-col lightborder-right -top-20 z-40 transition-opacity duration-700`}>
+        <div className="lightborderbottom lightbordertop">
+          <h1 className="text-sm p-2 font-semibold text-gray-300">Preview</h1>
+        </div>
 
-  <div className="flex flex-col w-full h-full items-center justify-center gap-4 animate-fadeInDelay">
-    {isGenerating ? (
-      <>
-        {/* Loading Animation */}
-        <div className="relative flex justify-center items-center">
-          <div className="relative w-[200px] h-[350px] rounded-md bg-black overflow-hidden">
-            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gray-600/40 to-transparent" />
-            <div className="absolute -inset-2 rounded-md pointer-events-none">
-              <div className="w-full h-full rounded-md bg-gradient-to-r from-purple-500 via-blue-500 to-white opacity-40 blur-3xl animate-[spin_10s_linear_infinite]" />
+        <div className="flex flex-col w-full h-full items-center justify-center gap-4 animate-fadeInDelay">
+          {isGenerating ? (
+            <>
+              {/* Enhanced Loading Animation with Status */}
+              <div className="relative flex justify-center items-center">
+                <div className="relative w-[200px] h-[350px] rounded-md bg-black overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gray-600/40 to-transparent" />
+                  <div className="absolute -inset-2 rounded-md pointer-events-none">
+                    <div className="w-full h-full rounded-md bg-gradient-to-r from-purple-500 via-blue-500 to-white opacity-40 blur-3xl animate-[spin_10s_linear_infinite]" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="w-64 flex flex-col items-center gap-2">
+                <div className="w-full h-2 rounded-full bg-gray-700 relative overflow-hidden">
+                  <div 
+                    className="absolute inset-0 bg-blue-500 transition-all duration-500 ease-out"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between w-full text-xs text-gray-400">
+                  <span>{getStatusMessage()}</span>
+                  <span>{progress}%</span>
+                </div>
+                {currentVideo > 0 && totalVideos > 0 && (
+                  <div className="text-xs text-gray-500">
+                    Video {currentVideo} of {totalVideos}
+                  </div>
+                )}
+              </div>
+              
+              <button 
+                onClick={cancelGeneration}
+                className="text-xs text-red-400 hover:text-red-300 transition-colors"
+              >
+                Cancel Generation
+              </button>
+            </>
+          ) : (
+            <div className="w-full h-full rounded-md flex items-center justify-center">
+              {videoUrl ? (
+                <video
+                  src={videoUrl}
+                  controls
+                  autoPlay
+                  loop
+                  className="w-[200px] h-[350px] darkbg shadow-lg"
+                />
+              ) : (
+                <img
+                  src={
+                    contentType === "generative"
+                      ? realistic
+                      : contentType === "silhouette"
+                      ? silhouette
+                      : cartoon
+                  }
+                  alt="Default"
+                  className="aspect-[9/16] h-[500px] object-cover rounded-sm shadow-lg"
+                />
+              )}
             </div>
-          </div>
+          )}
         </div>
-        <div className="w-40 h-1 rounded-full bg-gray-700 relative overflow-hidden">
-          <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-gray-500 to-transparent"></div>
-        </div>
-        <p className="text-xs text-gray-400 animate-pulse">Generating your short...</p>
-      </>
-    ) : (
-      <div className="w-full h-full rounded-md flex items-center justify-center">
-        {videoUrl ? (
-          <video
-            src={videoUrl}
-            controls
-            autoPlay
-            loop
-            className="w-[200px] h-[350px] darkbg shadow-lg"
-          />
-        ) : (
-          <img
-            src={
-              contentType === "generative"
-                ? realistic
-                : contentType === "silhouette"
-                ? silhouette
-                : cartoon
-            }
-            alt="Default"
-            className="aspect-[9/16] h-[500px] object-cover rounded-sm shadow-lg"
-          />
-        )}
       </div>
-    )}
-  </div>
-</div>
-
 
 {/* Sliding Drawer */}
 <div
