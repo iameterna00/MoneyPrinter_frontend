@@ -140,7 +140,7 @@ useEffect(() => {
 
   const cancelGeneration = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/cancel", {
+      const res = await fetch(`${webApi}/api/cancel`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
       });
