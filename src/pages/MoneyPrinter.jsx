@@ -35,12 +35,15 @@ export default function MoneyPrinter() {
   const [songsLoading, setSongsLoading] = useState(true);
   const [songsError, setSongsError] = useState(null);
   
-  // NEW: Status tracking state
+  // Enhanced status tracking state
   const [taskId, setTaskId] = useState(null);
   const [generationStatus, setGenerationStatus] = useState(null);
   const [progress, setProgress] = useState(0);
   const [currentVideo, setCurrentVideo] = useState(0);
   const [totalVideos, setTotalVideos] = useState(0);
+  const [currentStep, setCurrentStep] = useState("");
+  const [stepProgress, setStepProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Load from localStorage
   useEffect(() => {
@@ -108,63 +111,95 @@ export default function MoneyPrinter() {
     fetchSongs();
   }, []);
 
-  // NEW: Poll for status updates
+  // Enhanced status polling
   useEffect(() => {
-    if (!taskId) return;
-
-    const checkStatus = async () => {
-      try {
-        const res = await fetch(`${webApi}/generate/status/${taskId}`);
-        const data = await res.json();
-        
-        setGenerationStatus(data.status);
-        
-        if (data.status === 'processing') {
-          // Update progress if available
-          if (data.progress) setProgress(data.progress);
-          if (data.current_video) setCurrentVideo(data.current_video);
-          if (data.total_videos) setTotalVideos(data.total_videos);
-          
-          // Check again in 3 seconds
-          setTimeout(checkStatus, 3000);
-        } else if (data.status === 'completed') {
-          // Generation finished successfully
-          setIsGenerating(false);
-          setProgress(100);
-          
-          // Fetch the list of generated videos
-          const videosRes = await fetch(`${webApi}/api/videos`);
-          const videosData = await videosRes.json();
-          
-          if (videosData.videos && videosData.videos.length > 0) {
-            // Show the first video or let user choose
-            const firstVideo = videosData.videos[0];
-            setVideoUrl(`${webApi}/video/${firstVideo}`);
+    let intervalId;
+    
+    if (taskId && isGenerating) {
+      const checkStatus = async () => {
+        try {
+          const res = await fetch(`${webApi}/generate/status/${taskId}`);
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
           }
           
-          alert(data.message || "Video generation completed!");
-        } else if (data.status === 'error') {
-          // Generation failed
-          setIsGenerating(false);
-          alert(data.message || "Generation failed");
+          const data = await res.json();
+          console.log('Status update:', data); // Debug log
+          
+          setGenerationStatus(data.status);
+          
+          if (data.status === 'processing' || data.status === 'started') {
+            // Update all progress information
+            if (data.progress !== undefined) setProgress(data.progress);
+            if (data.current_video !== undefined) setCurrentVideo(data.current_video);
+            if (data.total_videos !== undefined) setTotalVideos(data.total_videos);
+            if (data.current_step) setCurrentStep(data.current_step);
+            if (data.step_progress !== undefined) setStepProgress(data.step_progress);
+            
+            // Continue polling
+          } else if (data.status === 'completed') {
+            // Generation finished successfully
+            setIsGenerating(false);
+            setProgress(100);
+            setStepProgress(100);
+            setCurrentStep("Completed");
+            
+            // Fetch the list of generated videos
+            try {
+              const videosRes = await fetch(`${webApi}/api/videos`);
+              if (videosRes.ok) {
+                const videosData = await videosRes.json();
+                
+                if (videosData.videos && videosData.videos.length > 0) {
+                  // Show the first video or let user choose
+                  const firstVideo = videosData.videos[0];
+                  setVideoUrl(`${webApi}/video/${firstVideo}`);
+                }
+              }
+            } catch (videoErr) {
+              console.error("Error fetching videos:", videoErr);
+            }
+            
+            alert(data.message || "Video generation completed!");
+            clearInterval(intervalId);
+          } else if (data.status === 'error') {
+            // Generation failed
+            setIsGenerating(false);
+            setErrorMessage(data.message || "Generation failed");
+            alert(data.message || "Generation failed");
+            clearInterval(intervalId);
+          } else if (data.status === 'cancelled') {
+            setIsGenerating(false);
+            setGenerationStatus('cancelled');
+            clearInterval(intervalId);
+          }
+        } catch (err) {
+          console.error("Error checking status:", err);
+          // Don't stop polling on network errors - retry next interval
         }
-      } catch (err) {
-        console.error("Error checking status:", err);
-        // Retry after 5 seconds if there's an error
-        setTimeout(checkStatus, 5000);
-      }
-    };
+      };
 
-    checkStatus();
-  }, [taskId]);
+      // Check status immediately and then every 3 seconds
+      checkStatus();
+      intervalId = setInterval(checkStatus, 3000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [taskId, isGenerating]);
 
   const generateVideo = async () => {
+    // Reset all states
     setVideoUrl("");
     setIsGenerating(true);
-    setGenerationStatus("processing");
+    setGenerationStatus("starting");
     setProgress(0);
     setCurrentVideo(0);
     setTotalVideos(0);
+    setCurrentStep("Initializing...");
+    setStepProgress(0);
+    setErrorMessage("");
     
     try {
       const payload = {
@@ -182,13 +217,23 @@ export default function MoneyPrinter() {
         color: subtitlesColor,
       };
 
+      console.log('Sending payload:', payload); // Debug log
+
       const res = await fetch(`${webApi}/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { 
+          "Content-Type": "application/json", 
+          Accept: "application/json" 
+        },
         body: JSON.stringify(payload),
       });
 
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
+      console.log('Generation response:', data); // Debug log
       
       if (data.task_id) {
         setTaskId(data.task_id);
@@ -196,29 +241,37 @@ export default function MoneyPrinter() {
       } else {
         // Fallback for old API
         setIsGenerating(false);
-        alert(data.message);
+        alert(data.message || "No task ID received");
       }
     } catch (err) {
-      console.error(err);
+      console.error('Generation error:', err);
       setIsGenerating(false);
+      setErrorMessage(err.message);
       alert("An error occurred. Please try again later.");
     }
   };
 
   const cancelGeneration = async () => {
     try {
-      const res = await fetch(`${webApi}/cancel`, {
+      const res = await fetch(`${webApi}/generate/cancel/${taskId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
-      const data = await res.json();
-      setIsGenerating(false);
-      setGenerationStatus("cancelled");
-      setTaskId(null);
-      alert(data.message);
+      
+      if (res.ok) {
+        const data = await res.json();
+        setIsGenerating(false);
+        setGenerationStatus("cancelled");
+        alert(data.message || "Generation cancelled");
+      } else {
+        throw new Error("Failed to cancel generation");
+      }
     } catch (err) {
       console.error(err);
-      alert("An error occurred. Please try again later.");
+      // Force stop anyway
+      setIsGenerating(false);
+      setGenerationStatus("cancelled");
+      alert("Generation stopped");
     }
   };
 
@@ -238,23 +291,37 @@ export default function MoneyPrinter() {
     setCustomPrompts([...customPrompts, ""]);
   };
 
-  // NEW: Get status message for display
+  // Enhanced status message for display
   const getStatusMessage = () => {
     switch (generationStatus) {
+      case 'starting':
+        return "Starting video generation...";
       case 'processing':
+      case 'started':
+        if (currentStep) {
+          return `${currentStep}...`;
+        }
         if (currentVideo > 0 && totalVideos > 0) {
           return `Generating video ${currentVideo} of ${totalVideos}...`;
         }
-        return "Starting video generation...";
+        return "Processing...";
       case 'completed':
         return "Generation completed!";
       case 'error':
-        return "Generation failed";
+        return errorMessage || "Generation failed";
       case 'cancelled':
         return "Generation cancelled";
       default:
         return "Processing...";
     }
+  };
+
+  // Get detailed progress information
+  const getDetailedProgress = () => {
+    if (currentStep && stepProgress > 0) {
+      return `${stepProgress}%`;
+    }
+    return `${progress}%`;
   };
 
   return (
@@ -329,28 +396,49 @@ export default function MoneyPrinter() {
         <div className="flex flex-col w-full h-full items-center justify-center gap-4 animate-fadeInDelay">
           {isGenerating ? (
             <>
-              {/* Enhanced Loading Animation with Status */}
+              {/* Enhanced Loading Animation with Detailed Status */}
               <div className="relative flex justify-center items-center">
                 <div className="relative w-[200px] h-[350px] rounded-md bg-black overflow-hidden">
-                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gray-600/40 to-transparent" />
+                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gray-600/40 to-transparent animate-shimmer" />
                   <div className="absolute -inset-2 rounded-md pointer-events-none">
                     <div className="w-full h-full rounded-md bg-gradient-to-r from-purple-500 via-blue-500 to-white opacity-40 blur-3xl animate-[spin_10s_linear_infinite]" />
                   </div>
                 </div>
               </div>
               
-              {/* Progress Bar */}
-              <div className="w-64 flex flex-col items-center gap-2">
-                <div className="w-full h-2 rounded-full bg-gray-700 relative overflow-hidden">
-                  <div 
-                    className="absolute inset-0 bg-blue-500 transition-all duration-500 ease-out"
-                    style={{ width: `${progress}%` }}
-                  ></div>
+              {/* Progress Information */}
+              <div className="w-80 flex flex-col items-center gap-3">
+                {/* Main Progress Bar */}
+                <div className="w-full">
+                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>{getStatusMessage()}</span>
+                    <span>{getDetailedProgress()}</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-gray-700 relative overflow-hidden">
+                    <div 
+                      className="absolute inset-0 bg-blue-500 transition-all duration-500 ease-out"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="flex justify-between w-full text-xs text-gray-400">
-                  <span>{getStatusMessage()}</span>
-                  <span>{progress}%</span>
-                </div>
+
+                {/* Step Progress (if available) */}
+                {currentStep && stepProgress > 0 && stepProgress < 100 && (
+                  <div className="w-full">
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>Current step: {currentStep}</span>
+                      <span>{stepProgress}%</span>
+                    </div>
+                    <div className="w-full h-1 rounded-full bg-gray-800 relative overflow-hidden">
+                      <div 
+                        className="absolute inset-0 bg-green-500 transition-all duration-300 ease-out"
+                        style={{ width: `${stepProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Video Count */}
                 {currentVideo > 0 && totalVideos > 0 && (
                   <div className="text-xs text-gray-500">
                     Video {currentVideo} of {totalVideos}
@@ -360,7 +448,7 @@ export default function MoneyPrinter() {
               
               <button 
                 onClick={cancelGeneration}
-                className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                className="text-xs text-red-400 hover:text-red-300 transition-colors px-3 py-1 border border-red-400/30 rounded hover:bg-red-400/10"
               >
                 Cancel Generation
               </button>
@@ -373,7 +461,7 @@ export default function MoneyPrinter() {
                   controls
                   autoPlay
                   loop
-                  className="w-[200px] h-[350px] darkbg shadow-lg"
+                  className="w-[200px] h-[350px] darkbg shadow-lg rounded"
                 />
               ) : (
                 <img
@@ -393,108 +481,103 @@ export default function MoneyPrinter() {
         </div>
       </div>
 
-{/* Sliding Drawer */}
-<div
-  className={`fixed top-0 right-0 h-full w-120 bg-[#000]/60 lightborder backdrop-blur-3xl  z-50 transform transition-transform duration-500 ${
-    drawerOpen ? "translate-x-0" : "translate-x-full"
-  }`}
->
-  <div className="flex justify-between items-center p-4 border-b border-gray-700">
-    <h2 className="text-white text-sm">Additional Scripts</h2>
-    <button
-      onClick={() => setDrawerOpen(false)}
-      className="text-gray-400 hover:text-white"
-    >
-      ✕
-    </button>
-  </div>
+      {/* Sliding Drawer */}
+      <div
+        className={`fixed top-0 right-0 h-full w-120 bg-[#000]/60 lightborder backdrop-blur-3xl  z-50 transform transition-transform duration-500 ${
+          drawerOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex justify-between items-center p-4 border-b border-gray-700">
+          <h2 className="text-white text-sm">Additional Scripts</h2>
+          <button
+            onClick={() => setDrawerOpen(false)}
+            className="text-gray-400 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
 
-<div className="flex flex-col gap-4 p-4">
-  {customPrompts.map((prompt, i) => (
-    <div key={i} className="relative">
-      <textarea
-        rows={3}
-        value={prompt}
-        placeholder={`Video Script ${i + 1}`}
-        onChange={(e) => handleInput(e, i)}
-        className="lightborder p-3 rounded-[15px] focus:outline-none bg-[#0f0f0f] text-[12px] text-gray-300 placeholder-gray-400 duration-300 w-full resize-none scrollbar-hide"
-      />
-      {customPrompts.length > 1 && (
-        <button
-          onClick={() => removeCustomPrompt(i)}
-          className="absolute top-2 cursor-pointer  right-2 text-gray-400 hover:text-white text-xs"
-        >
-          ✕
-        </button>
+        <div className="flex flex-col gap-4 p-4">
+          {customPrompts.map((prompt, i) => (
+            <div key={i} className="relative">
+              <textarea
+                rows={3}
+                value={prompt}
+                placeholder={`Video Script ${i + 1}`}
+                onChange={(e) => handleInput(e, i)}
+                className="lightborder p-3 rounded-[15px] focus:outline-none bg-[#0f0f0f] text-[12px] text-gray-300 placeholder-gray-400 duration-300 w-full resize-none scrollbar-hide"
+              />
+              {customPrompts.length > 1 && (
+                <button
+                  onClick={() => removeCustomPrompt(i)}
+                  className="absolute top-2 cursor-pointer  right-2 text-gray-400 hover:text-white text-xs"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+          <div className="w-full justify-center items-center flex">
+            <button
+              onClick={addCustomPrompt}
+              className="lightborder p-2 px-4 flex gap-2 started rounded-[15px] text-gray-400 hover:text-white text-xs"
+            >
+              <CircleFadingPlus size={14} /> Add Another Script
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal Overlay */}
+      {activeModal && (
+        <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+          <div className="bg-[#111] shadow-[0_0_150px_20px_rgba(255,255,255,0.15)]  p-6 rounded-lg w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
+            {activeModal === "subtitles" && (
+              <SubtitlesModal
+                subtitlesPosition={subtitlesPosition}
+                setSubtitlesPosition={setSubtitlesPosition}
+                subtitlesColor={subtitlesColor}
+                setSubtitlesColor={setSubtitlesColor}
+                save={save}
+                setActiveModal={setActiveModal}
+              />
+            )}
+
+            {activeModal === "content" && (
+              <ContentModal
+                paragraphNumber={paragraphNumber}
+                setParagraphNumber={setParagraphNumber}
+                setContentType={setContentType}
+                contentType={contentType}
+                save={save}
+                setActiveModal={setActiveModal}
+              />
+            )}
+
+            {activeModal === "performance" && (
+              <PerformanceModal
+                threads={threads}
+                setThreads={setThreads}
+                save={save}
+                setActiveModal={setActiveModal}
+              />
+            )}
+
+            {activeModal === "preferences" && (
+              <PreferencesModal
+                youtubeUpload={youtubeUpload}
+                setYoutubeUpload={setYoutubeUpload}
+                useMusic={setUseMusic}
+                setUseMusic={setUseMusic}
+                reuseChoices={reuseChoices}
+                setReuseChoices={setReuseChoices}
+                save={save}
+                setActiveModal={setActiveModal}
+              />
+            )}
+          </div>
+        </div>
       )}
-    </div>
-  ))}
-<div className="w-full justify-center items-center flex">
-    <button
-    onClick={addCustomPrompt}
-    className="lightborder p-2 px-4 flex gap-2 started rounded-[15px] text-gray-400 hover:text-white text-xs"
-  >
-     <CircleFadingPlus size={14} /> Add Another Script
-  </button>
-</div>
-</div>
-</div>
-
-
-          {/* Modal Overlay */}
-{activeModal && (
-  <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-    <div className="bg-[#111] shadow-[0_0_150px_20px_rgba(255,255,255,0.15)]  p-6 rounded-lg w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
-
-   
-      {activeModal === "subtitles" && (
-        <SubtitlesModal
-          subtitlesPosition={subtitlesPosition}
-          setSubtitlesPosition={setSubtitlesPosition}
-          subtitlesColor={subtitlesColor}
-          setSubtitlesColor={setSubtitlesColor}
-          save={save}
-          setActiveModal={setActiveModal}
-        />
-      )}
-
-      {activeModal === "content" && (
-        <ContentModal
-          paragraphNumber={paragraphNumber}
-          setParagraphNumber={setParagraphNumber}
-          setContentType={setContentType}
-          contentType={contentType}
-          save={save}
-          setActiveModal={setActiveModal}
-        />
-      )}
-
-      {activeModal === "performance" && (
-        <PerformanceModal
-          threads={threads}
-          setThreads={setThreads}
-          save={save}
-          setActiveModal={setActiveModal}
-        />
-      )}
-
-      {activeModal === "preferences" && (
-        <PreferencesModal
-          youtubeUpload={youtubeUpload}
-          setYoutubeUpload={setYoutubeUpload}
-          useMusic={useMusic}
-          setUseMusic={setUseMusic}
-          reuseChoices={reuseChoices}
-          setReuseChoices={setReuseChoices}
-          save={save}
-          setActiveModal={setActiveModal}
-        />
-      )}
-
-    </div>
-  </div>
-)}
-
     </div>
   );
 }
