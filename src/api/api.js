@@ -1,4 +1,4 @@
 
 export const webApi = window.location.hostname === "localhost"
   ? 'http://127.0.0.1:8000/api' 
-  : 'https://spoken-mold-updates-whom.trycloudflare.com/api'; 
+  : 'https://attachments-washing-moderators-handbags.trycloudflare.com/api'; 

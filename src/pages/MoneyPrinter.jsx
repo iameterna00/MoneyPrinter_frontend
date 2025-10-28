@@ -8,12 +8,14 @@ import realistic from '../assets/realistic.png'
 import SongList from "../components/YoutubeModels/bgmusic";
 import VoiceList from "../components/YoutubeModels/voice";
 import { webApi } from "../api/api";
+import LanguageSelect from "../components/YoutubeModels/youtubepages/language";
 
 export default function MoneyPrinter() {
   const [videoSubject, setVideoSubject] = useState("");
   const [aiModel, setAiModel] = useState("deepseek-chat");
   const [voice, setVoice] = useState([]);
   const [voiceName, setVoiceName] = useState([]);
+  const [language, setLanguage] = useState("en");
   const [songsName, setSongsName] = useState("");
   const [contentType, setContentType] = useState("generative");
   const [paragraphNumber, setParagraphNumber] = useState(1);
@@ -30,7 +32,7 @@ export default function MoneyPrinter() {
   const [useCustomPrompt, setUseCustomPrompt] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Script");
-  const tabs = ["Script", "Voice", "Music", "Caption"];
+  const tabs = ["Script", "Voice", "Music", "Caption","Language"];
   const [songs, setSongs] = useState([]); 
   const [songsLoading, setSongsLoading] = useState(true);
   const [songsError, setSongsError] = useState(null);
@@ -54,6 +56,7 @@ export default function MoneyPrinter() {
         videoSubject: setVideoSubject,
         aiModel: setAiModel,
         voiceName: setVoiceName,
+        language: setLanguage,
         songsName: setSongsName,
         paragraphNumber: setParagraphNumber,
         contentType: setContentType,
@@ -206,6 +209,7 @@ export default function MoneyPrinter() {
         videoSubject,
         aiModel,
         voiceName,
+        language,
         paragraphNumber,
         contentType,
         automateYoutubeUpload: youtubeUpload,
@@ -384,6 +388,13 @@ export default function MoneyPrinter() {
               loading={songsLoading}
               error={songsError}
             />
+          )}
+          
+          {activeTab === "Language" && (
+        <LanguageSelect 
+          languages={language}
+          setLanguage={setLanguage}
+        />
           )}
         </div>
       </div>
