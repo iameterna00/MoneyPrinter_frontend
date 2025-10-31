@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronsUpDown, X } from 'lucide-react'; 
 import silhouette from '../../assets/darkimg.jpg'
 import cartoon from '../../assets/cartoon.png'
+import silhouette_3d from '../../assets/silhouette_3d.jpg'
 import realistic from '../../assets/realistic.png'
 import { CircleFadingPlus, Scroll, ArrowUp, CircleStop } from "lucide-react";
 
@@ -111,6 +112,7 @@ export const VideoPromptInput = ({
     { value: "generative", label: "Cineamtic", img: realistic },
     { value: "silhouette", label: "Silhouette", img: silhouette },
     { value: "cartoon", label: "Dark Cartoon", img: cartoon },
+    { value: "silhouette_3d", label: "Dark 3D", img: silhouette_3d },
   ].map((option) => (
     <div
       key={option.value}
@@ -336,6 +338,7 @@ export const ContentModal = ({
           { value: "generative", label: "Generative", img: realistic },
           { value: "silhouette", label: "Silhouette", img: silhouette },
           { value: "cartoon", label: "Cartoon", img: cartoon },
+          { value: "silhouette_3d", label: "Dark 3D", img: silhouette_3d },
         ].map((option) => (
           <div
             key={option.value}

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { AIModal, ContentModal, PerformanceModal, PreferencesModal, SubtitlesModal, VideoPromptInput, VoiceSelector } from "../components/YoutubeModels/youtubemodal";
 import SidebarMenu from "../components/YoutubeModels/sidebar";
 import silhouette from '../assets/darkimg.jpg'
+import silhouette_3d from '../assets/silhouette_3d.jpg'
 import cartoon from '../assets/cartoon.png'
 import realistic from '../assets/realistic.png'
 import SongList from "../components/YoutubeModels/bgmusic";
@@ -481,7 +482,9 @@ export default function MoneyPrinter() {
                       ? realistic
                       : contentType === "silhouette"
                       ? silhouette
-                      : cartoon
+                    : contentType === "cartoon"
+                    ? cartoon
+                    : silhouette_3d
                   }
                   alt="Default"
                   className="aspect-[9/16] h-[500px] object-cover rounded-sm shadow-lg"
