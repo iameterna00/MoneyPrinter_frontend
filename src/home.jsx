@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Header } from './header';
 
 function Home() {
   const navigate = useNavigate();
@@ -14,43 +15,9 @@ function Home() {
 
   return (
     <div className="bg-[#0B0B0B] text-white min-h-screen overflow-x-hidden">
-      <header className="w-full flex justify-center items-center fixed top-5 z-50">
-        <div className="flex items-center bg-gradient-to-r from-[#655172] to-[#323232] py-2 px-6 rounded-[30px] justify-between md:w-[50%] w-[90%] space-x-4 md:space-x-8 backdrop-blur-sm">
-          <div className="bg-[#4A4A5C] w-10 h-10 rounded-full flex justify-center items-center font-bold text-sm flex-shrink-0">
-            W
-          </div>
-
-          <nav className="flex justify-between w-full items-center">
-            <div className="flex items-center">
-              <ul className="flex space-x-4 md:space-x-8">
-                <li>
-                  <a href="#models" className="text-white text-sm hover:text-gray-300 transition-colors duration-200">
-                    Models
-                  </a>
-                </li>
-                <li>
-                  <a href="#pricing" className="text-white text-sm hover:text-gray-300 transition-colors duration-200">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a href="#explore" className="text-white text-sm hover:text-gray-300 transition-colors duration-200">
-                    Explore
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <button className="bg-gradient-to-r cursor-pointer from-[#323232] to-[#655172] hover:from-[#655172] hover:to-[#323232] text-white px-6 py-2 rounded-[30px] text-sm transition-all duration-300 shadow-lg">
-              Sign up
-            </button>
-          </nav>
-        </div>
-      </header>
-
+      <Header />
       <main className="relative flex flex-col items-center justify-center min-h-screen pb-10 pt-20">
-        {/* Film Reel Background with Videos - Circular Layout */}
         <div className="absolute inset-0 overflow-hidden opacity-20 z-0">
-          {/* Top Circular Reel */}
           <div className="absolute top-10 left-0 w-full">
             <div className="flex space-x-6 animate-circularLoop">
               {[...reelVideos, ...reelVideos, ...reelVideos].map((video, index) => (
@@ -123,9 +90,31 @@ function Home() {
           </div>
 
           {/* CTA Button */}
-          <button onClick={()=>navigate('/youtube')} className="bg-gradient-to-r cursor-pointer from-[#738FFF] to-[#725D80] hover:from-[#725D80] hover:to-[#738FFF] text-white font-semibold px-8 py-4 rounded-full text-lg md:text-xl shadow-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
-            Generate Video Now
-          </button>
+<button
+  onClick={() => navigate('/youtube')}
+  className="
+    cursor-pointer
+    bg-gradient-to-r from-[#738FFF] to-[#725D80]
+    text-white font-semibold
+    px-8 py-4 rounded-full text-lg md:text-xl
+    shadow-[0_0_20px_rgba(115,143,255,0.4)]
+    transform
+    hover:shadow-[0_0_30px_rgba(114,93,128,0.6)]
+   
+    transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]
+    [transition-property:background-position,background-color,border-color,color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter]
+  "
+  style={{
+    backgroundSize: '200% 200%',
+    backgroundPosition: 'left center',
+  }}
+  onMouseEnter={(e) => (e.currentTarget.style.backgroundPosition = 'right center')}
+  onMouseLeave={(e) => (e.currentTarget.style.backgroundPosition = 'left center')}
+>
+    Generate Video Now
+</button>
+
+
         </div>
       </main>
 
