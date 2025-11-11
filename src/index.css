@@ -66,6 +66,19 @@
   scrollbar-width: thin;       
   scrollbar-color: #000 #292929;  
 }
+/* Add this in your CSS file or Tailwind global styles */
+.plugin-btn {
+  position: relative;
+  border: 2px solid transparent;
+  overflow: hidden;
+}
+
+.border-gradient {
+  border: 2px solid transparent;
+  position: relative;
+}
+
+
 
 button.button {
   border-radius: 8px;

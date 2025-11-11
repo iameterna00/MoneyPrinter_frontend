@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { webApi } from "../../api/api";
+import { webApi } from "../../../api/api";
 
 export default function VoiceList({ onSelectVoice, voiceName, Voice }) {
   const [currentVoice, setCurrentVoice] = useState(null);

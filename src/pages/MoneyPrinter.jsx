@@ -1,13 +1,12 @@
 import { CircleFadingPlus } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { AIModal, ContentModal, PerformanceModal, PreferencesModal, SubtitlesModal, VideoPromptInput, VoiceSelector } from "../components/YoutubeModels/youtubemodal";
-import SidebarMenu from "../components/YoutubeModels/sidebar";
+import { VideoPromptInput } from "../components/YoutubeModels/youtubemodal";
 import silhouette from '../assets/darkimg.jpg'
 import silhouette_3d from '../assets/silhouette_3d.jpg'
 import cartoon from '../assets/cartoon.png'
 import realistic from '../assets/realistic.png'
-import SongList from "../components/YoutubeModels/bgmusic";
-import VoiceList from "../components/YoutubeModels/voice";
+import SongList from "../components/YoutubeModels/youtubepages/bgmusic";
+import VoiceList from "../components/YoutubeModels/youtubepages/voice";
 import { webApi } from "../api/api";
 import LanguageSelect from "../components/YoutubeModels/youtubepages/language";
 
@@ -542,56 +541,7 @@ export default function MoneyPrinter() {
         </div>
       </div>
 
-      {/* Modal Overlay */}
-      {activeModal && (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-          <div className="bg-[#111] shadow-[0_0_150px_20px_rgba(255,255,255,0.15)]  p-6 rounded-lg w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
-            {activeModal === "subtitles" && (
-              <SubtitlesModal
-                subtitlesPosition={subtitlesPosition}
-                setSubtitlesPosition={setSubtitlesPosition}
-                subtitlesColor={subtitlesColor}
-                setSubtitlesColor={setSubtitlesColor}
-                save={save}
-                setActiveModal={setActiveModal}
-              />
-            )}
-
-            {activeModal === "content" && (
-              <ContentModal
-                paragraphNumber={paragraphNumber}
-                setParagraphNumber={setParagraphNumber}
-                setContentType={setContentType}
-                contentType={contentType}
-                save={save}
-                setActiveModal={setActiveModal}
-              />
-            )}
-
-            {activeModal === "performance" && (
-              <PerformanceModal
-                threads={threads}
-                setThreads={setThreads}
-                save={save}
-                setActiveModal={setActiveModal}
-              />
-            )}
-
-            {activeModal === "preferences" && (
-              <PreferencesModal
-                youtubeUpload={youtubeUpload}
-                setYoutubeUpload={setYoutubeUpload}
-                useMusic={setUseMusic}
-                setUseMusic={setUseMusic}
-                reuseChoices={reuseChoices}
-                setReuseChoices={setReuseChoices}
-                save={save}
-                setActiveModal={setActiveModal}
-              />
-            )}
-          </div>
-        </div>
-      )}
+    
     </div>
   );
 }
