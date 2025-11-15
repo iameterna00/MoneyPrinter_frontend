@@ -2,21 +2,17 @@ import React, { useState, useRef, useEffect } from "react";
 import { IoExtensionPuzzle } from "react-icons/io5";
 import { Volume2, VolumeX, X } from "lucide-react";
 import Lenis from "@studio-freight/lenis";
-import cartoon from '../../../assets/cartoon.png';
-import silhouette_3d from '../../../assets/silhouette_3d.jpg';
-import realistic from '../../../assets/realistic.png';
-import silhouette from '../../../assets/darkimg.jpg';
-import ugc from '../../../assets/ugc_1.mp4';
-import glass_right from '../../../assets/glass_right.mp4';
-import cover from '../../../assets/cover.png';
+import ugc from '../../../json/ugc.json';
+import Shorts from '../../../json/shorts.json';
+import AIclone from '../../../json/aiclone.json';
 
-export function PluginsModals() {
+export function PluginsModals({ onCategoryChange, onStyleSelect, selectedCategory }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [activeTab, setActiveTab] = useState("Shorts");
+  const [activeTab, setActiveTab] = useState(selectedCategory || "Shorts");
   const [scrollY, setScrollY] = useState(0);
-  const [globalMuted, setGlobalMuted] = useState(true); // Global mute state
-  const [hoveredVideo, setHoveredVideo] = useState(null); // Track hovered video
+  const [globalMuted, setGlobalMuted] = useState(true);
+  const [hoveredVideo, setHoveredVideo] = useState(null);
   const contentRef = useRef();
   const lenisRef = useRef();
   const scrollPositionRef = useRef(0);
@@ -24,34 +20,9 @@ export function PluginsModals() {
   const videoRefs = useRef({});
 
   const images = {
-    Shorts: [
-      { type: "image", src: silhouette },
-      { type: "image", src: cartoon },
-      { type: "image", src: silhouette_3d },
-      { type: "image", src: realistic },
-      { type: "image", src: silhouette },
-      { type: "image", src: cartoon },
-      { type: "image", src: silhouette_3d },
-      { type: "image", src: realistic },
-    ],
-    UGC: [
-      { type: "video", src: ugc, id: "ugc-1" },
-      { type: "video", src: glass_right, id: "ugc-2" },
-      { type: "image", src: cartoon },
-      { type: "image", src: silhouette },
-      { type: "image", src: cartoon },
-      { type: "image", src: silhouette_3d },
-      { type: "image", src: realistic },
-      { type: "image", src: silhouette },
-      { type: "image", src: cartoon },
-      { type: "image", src: silhouette_3d },
-    ],
-    "AI Clone": [
-      { type: "image", src: silhouette },
-      { type: "image", src: cartoon },
-      { type: "image", src: silhouette_3d },
-      { type: "image", src: realistic },
-    ],
+    Shorts: Shorts,
+    UGC: ugc,
+    "AI Clone": AIclone
   };
 
   // Apply global mute to all videos
@@ -99,6 +70,11 @@ export function PluginsModals() {
     const currentScroll = scrollPositionRef.current;
     setActiveTab(tab);
     
+    // Notify parent about category change
+    if (onCategoryChange) {
+      onCategoryChange(tab);
+    }
+    
     setTimeout(() => {
       if (lenisRef.current) {
         lenisRef.current.scrollTo(currentScroll);
@@ -107,14 +83,12 @@ export function PluginsModals() {
   };
 
   const handleVideoHover = (videoId, isHovering) => {
-    // Clear existing timeout
     if (hoverTimeoutRef.current[videoId]) {
       clearTimeout(hoverTimeoutRef.current[videoId]);
     }
 
     if (isHovering) {
       setHoveredVideo(videoId);
-      // Set timeout to play after 2 seconds
       hoverTimeoutRef.current[videoId] = setTimeout(() => {
         const videoElement = videoRefs.current[videoId];
         if (videoElement) {
@@ -125,11 +99,10 @@ export function PluginsModals() {
       }, 1000);
     } else {
       setHoveredVideo(null);
-      // Stop immediately on mouse leave
       const videoElement = videoRefs.current[videoId];
       if (videoElement) {
         videoElement.pause();
-        videoElement.currentTime = 0; // Reset to beginning
+        videoElement.currentTime = 0;
       }
     }
   };
@@ -139,22 +112,28 @@ export function PluginsModals() {
     setGlobalMuted(!globalMuted);
   };
 
+  // Handle style selection
+  const handleStyleClick = (item) => {
+    if (onStyleSelect) {
+      onStyleSelect(item);
+    }
+    handleClose();
+  };
+
   const coverScale = Math.max(1 - scrollY / 1200, 0.85);
-  const tabsSticky = scrollY >= 220; 
+  const tabsSticky = scrollY >= 220;
 
   const handleClose = () => {
     setIsClosing(true);
     
-    // Wait for close animation to complete before updating state
     setTimeout(() => {
       setIsOpen(false);
       setIsClosing(false);
       setScrollY(0);
       scrollPositionRef.current = 0;
-      setGlobalMuted(true); // Reset to muted when closing
+      setGlobalMuted(true);
       setHoveredVideo(null);
       
-      // Clear all hover timeouts and pause all videos
       Object.values(hoverTimeoutRef.current).forEach(timeout => {
         clearTimeout(timeout);
       });
@@ -239,7 +218,7 @@ export function PluginsModals() {
                 style={{ transform: `scale(${coverScale})` }}
               >
                 <img
-                  src={cover}
+                  src='https://res.cloudinary.com/disxfkyi3/image/upload/v1763195729/cover_dfhnte.png'
                   alt="Cover"
                   className="w-full h-full object-cover"
                 />
@@ -247,7 +226,7 @@ export function PluginsModals() {
 
               {/* Tabs */}
               <div
-                className={`flex gap-2 border-[#303030]  p-2  z-10 bg-[#1c1c1c] transition-all duration-200 ${
+                className={`flex gap-2 border-[#303030] p-2 z-10 bg-[#1c1c1c] transition-all duration-200 ${
                   tabsSticky ? "sticky top-0" : "relative"
                 }`}
               >
@@ -276,7 +255,7 @@ export function PluginsModals() {
                     <div
                       key={idx}
                       className="w-full rounded-lg overflow-hidden relative cursor-pointer hover:scale-102 duration-500 transition-transform aspect-[5/9] group"
-                      onClick={() => alert(`Clicked ${activeTab} item ${idx + 1}`)}
+                      onClick={() => handleStyleClick(item)}
                       onMouseEnter={() => item.type === "video" && handleVideoHover(videoId, true)}
                       onMouseLeave={() => item.type === "video" && handleVideoHover(videoId, false)}
                     >
@@ -313,6 +292,7 @@ export function PluginsModals() {
                           className="w-full h-full object-cover"
                         />
                       )}
+                   
                     </div>
                   );
                 })}
@@ -331,7 +311,7 @@ export function PluginsModals() {
       )}
 
       {/* Add the animation styles */}
-          <style>
+      <style>
         {`
           @keyframes slideUp {
             from {

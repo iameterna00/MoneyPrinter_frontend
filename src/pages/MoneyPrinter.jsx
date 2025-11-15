@@ -1,14 +1,11 @@
 import { CircleFadingPlus } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { VideoPromptInput } from "../components/YoutubeModels/youtubemodal";
-import silhouette from '../assets/darkimg.jpg'
-import silhouette_3d from '../assets/silhouette_3d.jpg'
-import cartoon from '../assets/cartoon.png'
-import realistic from '../assets/realistic.png'
 import SongList from "../components/YoutubeModels/youtubepages/bgmusic";
 import VoiceList from "../components/YoutubeModels/youtubepages/voice";
 import { webApi } from "../api/api";
 import LanguageSelect from "../components/YoutubeModels/youtubepages/language";
+import stylesData from '../json/shorts.json';
 
 export default function MoneyPrinter() {
   const [videoSubject, setVideoSubject] = useState("");
@@ -475,19 +472,11 @@ export default function MoneyPrinter() {
                   className="w-[200px] h-[350px] darkbg shadow-lg rounded"
                 />
               ) : (
-                <img
-                  src={
-                    contentType === "generative"
-                      ? realistic
-                      : contentType === "silhouette"
-                      ? silhouette
-                    : contentType === "cartoon"
-                    ? cartoon
-                    : silhouette_3d
-                  }
-                  alt="Default"
-                  className="aspect-[9/16] h-[500px] object-cover rounded-sm shadow-lg"
-                />
+              <img
+    src={stylesData.find(style => style.value === contentType)?.src || stylesData[0].src}
+    alt="Default"
+    className="aspect-[9/16] h-[500px] object-cover rounded-sm shadow-lg"
+  />
               )}
             </div>
           )}

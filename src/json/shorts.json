@@ -1,0 +1,28 @@
+[
+  {
+    "value": "generative",
+    "type": "image",
+    "label": "Cinematic",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195723/realistic_eap6oj.png"
+  },
+  {
+    "value": "silhouette",
+    "type":"image",
+    "label": "Silhouette",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195718/darkimg_vkzwpj.jpg"
+  },
+  {
+    "value": "cartoon",
+    "type":"image",
+    "label": "Dark Cartoon",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195720/cartoon_ni7og5.png"
+  },
+  {
+    "value": "silhouette_3d",
+    "type":"image",
+    "label": "Dark 3D",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195724/silhouette_3d_t0z4wh.jpg"
+  },
+  { "type": "video","label": "video1","value": "vid1", "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195722/glass_right_dbdjp0.mp4" },
+  { "type": "video","label": "video2","value": "vid2", "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195725/tea_hm6qfm.mp4" }
+]
