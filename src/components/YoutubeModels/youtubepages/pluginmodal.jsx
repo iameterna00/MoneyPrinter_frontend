@@ -9,7 +9,7 @@ import AIclone from '../../../json/aiclone.json';
 export function PluginsModals({ onCategoryChange, onStyleSelect, selectedCategory }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [activeTab, setActiveTab] = useState(selectedCategory || "Shorts");
+  const [activeTab, setActiveTab] = useState(selectedCategory || "UGC");
   const [scrollY, setScrollY] = useState(0);
   const [globalMuted, setGlobalMuted] = useState(true);
   const [hoveredVideo, setHoveredVideo] = useState(null);

@@ -1,6 +1,26 @@
 [
-  { "type": "video", "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195722/glass_right_dbdjp0.mp4", "value": "ugc-1" },
-  { "type": "video", "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195730/ugc_1_lyziam.mp4", "value": "ugc-2" },
-  { "type": "video", "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195725/tea_hm6qfm.mp4", "value": "ugc-3" },
-  { "type": "video", "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195722/food_ktrpx7.mp4", "value": "ugc-4" }
-  ]
+  {
+    "type": "video",
+    "label": "video1",
+    "value": "vid1",
+    "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195722/glass_right_dbdjp0.mp4"
+  },
+  {
+    "type": "video",
+    "label": "video2",
+    "value": "vid2",
+    "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195725/tea_hm6qfm.mp4"
+  },
+  {
+    "type": "video",
+    "label": "video3",
+    "value": "vid3",
+    "src": "https://res.cloudinary.com/disxfkyi3/video/upload/v1763195730/ugc_1_lyziam.mp4"
+  },
+    {
+    "type": "Image",
+    "label": "video4",
+    "value": "vid5",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763543439/WhatsApp_Image_2025-11-19_at_14.54.43_bc5bac92_tkd9cp.jpg"
+  }
+]

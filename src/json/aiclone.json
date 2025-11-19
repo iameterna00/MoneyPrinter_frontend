@@ -1,6 +1,26 @@
 [
-  { "type": "image", "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195718/darkimg_vkzwpj.jpg" },
-  { "type": "image", "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195720/cartoon_ni7og5.png" },
-  { "type": "image", "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195724/silhouette_3d_t0z4wh.jpg" },
-  { "type": "image", "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195723/realistic_eap6oj.png" }
+  {
+    "type": "image",
+    "label": "image1",
+    "value": "img1",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195718/darkimg_vkzwpj.jpg"
+  },
+  {
+    "type": "image",
+    "label": "image2",
+    "value": "img2",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195720/cartoon_ni7og5.png"
+  },
+  {
+    "type": "image",
+    "label": "image3",
+    "value": "img3",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195724/silhouette_3d_t0z4wh.jpg"
+  },
+  {
+    "type": "image",
+    "label": "image4",
+    "value": "img4",
+    "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763195723/realistic_eap6oj.png"
+  }
 ]

@@ -18,9 +18,8 @@ export const VideoPromptInput = ({
   generateVideo,
   cancelGeneration,
   setContentType,
-  contentType
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState("Shorts");
+  const [selectedCategory, setSelectedCategory] = useState("UGC");
   const [selectedStyle, setSelectedStyle] = useState(null);
   const [styles, setStyles] = useState([]);
   const [hoveredVideo, setHoveredVideo] = useState(null);
