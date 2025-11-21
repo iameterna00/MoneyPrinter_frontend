@@ -22,6 +22,7 @@ export default function YouTubeWorkspace() {
         <Routes>
           <Route index element={<MoneyPrinter />} />
           <Route path="/saved" element={<SavedYoutube />} />
+          <Route path="/avatar" element={<SavedYoutube />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/logout" element={<LogoutPage />} />

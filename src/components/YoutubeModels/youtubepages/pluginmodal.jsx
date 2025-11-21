@@ -9,7 +9,7 @@ import AIclone from '../../../json/aiclone.json';
 export function PluginsModals({ onCategoryChange, onStyleSelect, selectedCategory }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [activeTab, setActiveTab] = useState(selectedCategory || "UGC");
+  const [activeTab, setActiveTab] = useState(selectedCategory || "Shorts");
   const [scrollY, setScrollY] = useState(0);
   const [globalMuted, setGlobalMuted] = useState(true);
   const [hoveredVideo, setHoveredVideo] = useState(null);
@@ -230,7 +230,7 @@ export function PluginsModals({ onCategoryChange, onStyleSelect, selectedCategor
                   tabsSticky ? "sticky top-0" : "relative"
                 }`}
               >
-                {["Shorts", "UGC", "AI Clone"].map((tab) => (
+                {["Shorts", "AI Clone"].map((tab) => (
                   <div
                     key={tab}
                     onClick={() => handleTabChange(tab)}

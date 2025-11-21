@@ -20,7 +20,13 @@
     {
     "type": "Image",
     "label": "video4",
-    "value": "vid5",
+    "value": "vid4",
     "src": "https://res.cloudinary.com/disxfkyi3/image/upload/v1763543439/WhatsApp_Image_2025-11-19_at_14.54.43_bc5bac92_tkd9cp.jpg"
+  },
+    {
+    "type": "Image",
+    "label": "video5",
+    "value": "vid5",
+    "src": "https://images.pexels.com/photos/8945932/pexels-photo-8945932.jpeg"
   }
 ]

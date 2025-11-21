@@ -19,14 +19,13 @@ export const VideoPromptInput = ({
   cancelGeneration,
   setContentType,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState("UGC");
+  const [selectedCategory, setSelectedCategory] = useState("Shorts");
   const [selectedStyle, setSelectedStyle] = useState(null);
   const [styles, setStyles] = useState([]);
   const [hoveredVideo, setHoveredVideo] = useState(null);
 
   useEffect(() => {
     if (selectedCategory === "Shorts") setStyles(stylesData);
-    if (selectedCategory === "UGC") setStyles(stylesData1);
     if (selectedCategory === "AI Clone") setStyles(stylesData2);
   }, [selectedCategory]);
 
@@ -156,7 +155,7 @@ export const VideoPromptInput = ({
 
       {/* ART STYLE */}
       <div className="mb-4">
-        <h1 className="text-white mb-2 text-md font-semibold block">Style</h1>
+        <h1 className="text-white mb-2 text-md font-semibold block">Templates</h1>
 
         <div className="grid grid-cols-4 gap-4">
           {styles.map((option) => {

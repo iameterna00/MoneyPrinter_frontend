@@ -5,7 +5,8 @@ import {
   Video,
   Film,
   User,
-  Home
+  Home,
+  UserStar,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,8 +26,9 @@ const SidebarMenu = () => {
   // top menu items
   const menuItems = [
     { id: "Generate", label: "Generate", icon: Video, path: "/youtube" },
-    { id: "Saved", label: "Saved", icon: Film, path: "/youtube/saved" },
+    { id: "Saved", label: "Saved", icon: Film, path: "Fv" },
     { id: "Home", label: "Home", icon: Home, path: "/" },
+    { id: "Avatar", label: "Avatar", icon: UserStar, path: "/youtube/avatar" },
   ];
 
   const profileItem = { id: "Profile", label: "Profile", icon: User, path: "/profile" };
