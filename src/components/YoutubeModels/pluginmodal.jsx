@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { IoExtensionPuzzle } from "react-icons/io5";
 import { Volume2, VolumeX, X } from "lucide-react";
 import Lenis from "@studio-freight/lenis";
-import ugc from '../../../json/ugc.json';
-import Shorts from '../../../json/shorts.json';
-import AIclone from '../../../json/aiclone.json';
+import ugc from '../../json/ugc.json';
+import Shorts from '../../json/shorts.json';
+import AIclone from '../../json/aiclone.json';
 
 export function PluginsModals({ onCategoryChange, onStyleSelect, selectedCategory }) {
   const [isOpen, setIsOpen] = useState(false);

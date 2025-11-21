@@ -1,9 +1,10 @@
 import { CircleFadingPlus, Scroll, ArrowUp, CircleStop } from "lucide-react";
-import {PluginsModals} from '../YoutubeModels/youtubepages/pluginmodal';
+import {PluginsModals} from './pluginmodal';
 import stylesData from '../../json/shorts.json';
 import stylesData1 from '../../json/ugc.json';
 import stylesData2 from '../../json/aiclone.json';
 import { useEffect, useState } from "react";
+import { IoExtensionPuzzle } from "react-icons/io5";
 
 export const VideoPromptInput = ({
   useCustomPrompt,
@@ -18,24 +19,21 @@ export const VideoPromptInput = ({
   generateVideo,
   cancelGeneration,
   setContentType,
+  selectedCategory,
+  setSelectedCategory,
+
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState("Shorts");
   const [selectedStyle, setSelectedStyle] = useState(null);
   const [styles, setStyles] = useState([]);
   const [hoveredVideo, setHoveredVideo] = useState(null);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
 
   useEffect(() => {
     if (selectedCategory === "Shorts") setStyles(stylesData);
     if (selectedCategory === "AI Clone") setStyles(stylesData2);
   }, [selectedCategory]);
 
-  // Handle when a style is selected from the modal
-  const handleStyleSelect = (style) => {
-    setSelectedStyle(style);
-    setContentType(style.value);
-    save("contentType", style.value);
-    save("selectedStyle", style);
-  };
+
 
   // Handle category change from modal
   const handleCategoryChange = (category) => {
@@ -118,11 +116,48 @@ export const VideoPromptInput = ({
           />
         )}
 
-        <PluginsModals 
-          onCategoryChange={handleCategoryChange}
-          onStyleSelect={handleStyleSelect}
-          selectedCategory={selectedCategory}
-        />
+        {/* Category Selector - Side by Side Buttons */}
+        <div className="absolute bottom-4 left-4 flex gap-2">
+          {/* Shorts Button */}
+          <div
+            className="p-[2px] rounded-xl cursor-pointer text-gray-300 hover:text-white text-[12px] duration-500 group"
+            style={{
+              background: selectedCategory === "Shorts" 
+                ? 'linear-gradient(90deg, #00FFFF, #FF00FF, #00FFFF)' 
+                : (hoveredCategory === "Shorts" ? 'bg-[#00ffff63]' : 'transparent'),
+              backgroundSize: '200% 200%',
+              animation: (selectedCategory === "Shorts" || hoveredCategory === "Shorts") ? 'gradientRotate 2s linear infinite' : 'none'
+            }}
+            onClick={() => handleCategoryChange("Shorts")}
+            onMouseEnter={() => setHoveredCategory("Shorts")}
+            onMouseLeave={() => setHoveredCategory(null)}
+          >
+            <div className="bg-black rounded-lg px-3 py-1 flex items-center gap-2 transition-all duration-300 group-hover:bg-gray-900">
+              <IoExtensionPuzzle size={14} />
+              <span>Shorts</span>
+            </div>
+          </div>
+
+          {/* AI Clone Button */}
+          <div
+            className="p-[2px] rounded-xl cursor-pointer text-gray-300 hover:text-white text-[12px] duration-500 group"
+            style={{
+              background: selectedCategory === "AI Clone" 
+                ? 'linear-gradient(90deg, #00FFFF, #FF00FF, #00FFFF)' 
+                : (hoveredCategory === "AI Clone" ? 'bg-[#00ffff63]' : 'transparent'),
+              backgroundSize: '200% 200%',
+              animation: (selectedCategory === "AI Clone" || hoveredCategory === "AI Clone") ? 'gradientRotate 2s linear infinite' : 'none'
+            }}
+            onClick={() => handleCategoryChange("AI Clone")}
+            onMouseEnter={() => setHoveredCategory("AI Clone")}
+            onMouseLeave={() => setHoveredCategory(null)}
+          >
+            <div className="bg-black rounded-lg px-3 py-1 flex items-center gap-2 transition-all duration-300 group-hover:bg-gray-900">
+              <IoExtensionPuzzle size={14} />
+              <span>AI Clone</span>
+            </div>
+          </div>
+        </div>
 
         {/* Toggle Custom Prompt */}
         <div
@@ -205,6 +240,19 @@ export const VideoPromptInput = ({
           })}
         </div>
       </div>
+
+      <style>
+        {`
+          @keyframes gradientRotate {
+            0% {
+              background-position: 0% 50%;
+            }
+            100% {
+              background-position: 200% 50%;
+            }
+          }
+        `}
+      </style>
     </>
   );
 };

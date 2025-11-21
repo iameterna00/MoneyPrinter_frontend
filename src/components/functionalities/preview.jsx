@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { webApi } from "../../api/api";
 import Customize from "./customize";
 
-export function Preview({isGenerating, generationStatus, setGenerationStatus, taskId, setCurrentStep,setVideoUrl, setTotalVideos, setCurrentVideo,setStepProgress, progress, setIsGenerating, setProgress, currentStep, stepProgress, currentVideo, totalVideos, videoUrl, stylesData, contentType, cancelGeneration}) {
+export function Preview({isGenerating, generationStatus, setGenerationStatus, taskId, setCurrentStep,setVideoUrl, setTotalVideos, setCurrentVideo,setStepProgress, progress, setIsGenerating, setProgress, currentStep, stepProgress, currentVideo, totalVideos, videoUrl, stylesData, contentType, cancelGeneration, selectedcategory}) {
   // Enhanced status message for display
     useEffect(() => {
       let intervalId;
@@ -113,16 +113,16 @@ export function Preview({isGenerating, generationStatus, setGenerationStatus, ta
     return `${progress}%`;
   };
     return (
-      <div className={`inset-0 w-full flex flex-1 flex-col lightborder-right -top-20 z-40 transition-opacity duration-700`}>
-        <div className="lightborderbottom lightbordertop">
+      <div className={`inset-0 w-full h-full  flex flex-1 flex-col lightborder-right -top-20 z-40 transition-opacity duration-700`}>
+        <div className="lightborderbottom  lightbordertop">
           <h1 className="text-sm p-2 font-semibold text-gray-300">Preview</h1>
         </div>
 
-        <div className="flex flex-col w-full h-full items-center justify-center gap-4 animate-fadeInDelay">
+        <div className="flex  flex-col w-full h-full gap-4 animate-fadeInDelay">
           {isGenerating ? (
             <>
               {/* Enhanced Loading Animation with Detailed Status */}
-              <div className="relative flex justify-center items-center">
+              <div className="relative  red-300 flex justify-center items-center">
                 <div className="relative w-[200px] h-[350px] rounded-md bg-black overflow-hidden">
                   <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gray-600/40 to-transparent animate-shimmer" />
                   <div className="absolute -inset-2 rounded-md pointer-events-none">
@@ -180,7 +180,7 @@ export function Preview({isGenerating, generationStatus, setGenerationStatus, ta
             </>
           ) : (
   <div className="w-full flex-col h-full rounded-md flex ">
-<div className="flex w-full justify-center  lightborderbottom">
+<div className={`flex w-full ${selectedcategory !=='Shorts' && 'h-[100vh] items-center'} justify-center  lightborderbottom`}>
       {videoUrl ? (
     <video
       src={videoUrl}
@@ -215,11 +215,14 @@ export function Preview({isGenerating, generationStatus, setGenerationStatus, ta
     })()
   )}
 </div>
-<div>
+{selectedcategory =='Shorts' &&(
+  <div>
    <h1 className="text-white text-lg p-4 lightborderbottom font-semibold" >Customize</h1>
  
     <Customize defaultImage={stylesData.find((s) => s.value === contentType)?.src} />
 </div>
+
+)}
 </div>
 
           )}

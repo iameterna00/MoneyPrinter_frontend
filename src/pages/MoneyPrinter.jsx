@@ -1,6 +1,6 @@
 import { CircleFadingPlus } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { VideoPromptInput } from "../components/YoutubeModels/youtubemodal";
+import { VideoPromptInput } from "../components/YoutubeModels/videoInput";
 import SongList from "../components/YoutubeModels/youtubepages/bgmusic";
 import VoiceList from "../components/YoutubeModels/youtubepages/voice";
 import { webApi } from "../api/api";
@@ -45,7 +45,7 @@ export default function MoneyPrinter() {
   const [currentStep, setCurrentStep] = useState("");
   const [stepProgress, setStepProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
-
+  const [selectedCategory, setSelectedCategory] = useState("Shorts");
 
 
   const save = (key, value) => localStorage.setItem(`${key}Value`, value);
@@ -215,6 +215,9 @@ export default function MoneyPrinter() {
               generateVideo={generateVideo}
               setContentType={setContentType}
               cancelGeneration={cancelGeneration}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+  
             />
           )}
 
@@ -272,6 +275,7 @@ export default function MoneyPrinter() {
   videoUrl={videoUrl}
   stylesData={stylesData}
   contentType={contentType}
+  selectedcategory={selectedCategory}
   cancelGeneration={cancelGeneration}
 />
 
